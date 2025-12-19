@@ -1,0 +1,7 @@
+{
+  "name": "Copy of FitScan Brasil - Web",
+  "description": "Plataforma digital de personal trainer com IA. Escaneie máquinas e gere treinos otimizados direto do seu navegador fitscanbrasil.com.br",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
