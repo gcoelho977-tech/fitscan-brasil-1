@@ -1,4 +1,4 @@
-﻿
+
 import React, { useState, useEffect } from 'react';
 import { AppView, UserProfile, MachineAnalysis, WorkoutPlan, CompletedWorkout } from './types';
 import { WelcomeView } from './views/WelcomeView';
@@ -13,6 +13,7 @@ import { SettingsView } from './views/SettingsView';
 import { PrivacyView } from './views/PrivacyView';
 import { BottomNav } from './components/BottomNav';
 import { LimitModal } from './components/LimitModal';
+import { generateFullWorkout } from './services/geminiService';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.WELCOME);
@@ -86,7 +87,7 @@ const App: React.FC = () => {
           {isLoading ? "Iniciando FitScan Brasil" : "IA montando seu treino..."}
         </h2>
         <p className="text-gray-500 text-sm max-w-[200px]">
-          Preparando sua experiÃªncia de alta performance.
+          Preparando sua experiência de alta performance.
         </p>
       </div>
     );

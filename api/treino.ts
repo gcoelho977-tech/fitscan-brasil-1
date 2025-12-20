@@ -1,9 +1,5 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Método não permitido" });
@@ -11,14 +7,17 @@ export default async function handler(req, res) {
 
   try {
     let body = "";
-
     for await (const chunk of req) {
       body += chunk;
     }
 
     const { objetivo, nivel, equipamento } = JSON.parse(body);
 
-    const completion = await openai.chat.completions.create({
+    const client = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
