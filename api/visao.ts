@@ -1,39 +1,45 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+export default async function handler(req: any, res: any) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "MÈtodo n„o permitido" });
+  }
 
-export default async function handler(req, res) {
   try {
-    const { imageBase64 } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "API key Gemini n„o configurada" });
+    }
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "Isso √© um equipamento de academia? Responda apenas SIM ou N√ÉO." },
-            {
-              type: "image_url",
-              image_url: {
-                url: imageBase64,
-              },
-            },
-          ],
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const imageBase64 = req.body?.image;
+    if (!imageBase64) {
+      return res.status(400).json({ error: "Imagem n„o enviada" });
+    }
+
+    const result = await model.generateContent([
+      {
+        inlineData: {
+          data: imageBase64,
+          mimeType: "image/jpeg",
         },
-      ],
-    });
+      },
+      "Analise esta imagem e descreva o equipamento e possÌveis usos em treino fÌsico.",
+    ]);
 
-    res.status(200).json({
-      resultado: response.choices[0].message.content,
+    const text = result.response.text();
+
+    return res.json({
+      success: true,
+      result: text,
     });
   } catch (error: any) {
-  console.error("ERRO REAL VIS√ÉO:", error);
-  return res.status(500).json({
-    error: "Erro vis√£o",
-    message: error?.message || String(error),
-  });
+    console.error("Erro Gemini:", error);
+    return res.status(500).json({
+      error: "Erro vis„o",
+      message: error.message || "Erro desconhecido",
+    });
+  }
 }
-
