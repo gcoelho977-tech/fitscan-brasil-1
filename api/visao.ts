@@ -1,43 +1,50 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import OpenAI from 'openai';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "M√©todo n√£o permitido" });
-  }
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY!,
+});
 
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse
+) {
   try {
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'MÈtodo n„o permitido' });
+    }
+
     const { image } = req.body;
 
     if (!image) {
-      return res.status(400).json({ error: "Imagem n√£o enviada" });
+      return res.status(400).json({ error: 'Imagem n„o enviada' });
     }
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+    const response = await openai.responses.create({
+      model: 'gpt-4.1-mini',
+      input: [
+        {
+          role: 'user',
+          content: [
+            { type: 'input_text', text: 'Analise a imagem enviada e descreva corretamente.' },
+            {
+              type: 'input_image',
+              image_base64: image,
+            },
+          ],
+        },
+      ],
     });
 
-    const result = await model.generateContent([
-      {
-        inlineData: {
-          data: image,
-          mimeType: "image/jpeg",
-        },
-      },
-      "Analise esta imagem de equipamento de academia e descreva o exerc√≠cio correto.",
-    ]);
-
-    return res.status(200).json({
+    return res.json({
       success: true,
-      result: result.response.text(),
+      result: response.output_text ?? 'Sem resposta',
     });
   } catch (err: any) {
-    console.error("Erro Gemini:", err);
+    console.error('Erro OpenAI Vision:', err);
     return res.status(500).json({
-      error: "Erro vis√£o",
-      message: err.message || "Falha interna",
+      error: 'Erro vis„o',
+      message: err.message,
     });
   }
 }
