@@ -1,45 +1,43 @@
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "MÈtodo n„o permitido" });
+    return res.status(405).json({ error: "M√©todo n√£o permitido" });
   }
 
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ error: "API key Gemini n„o configurada" });
+    const { image } = req.body;
+
+    if (!image) {
+      return res.status(400).json({ error: "Imagem n√£o enviada" });
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
-    const imageBase64 = req.body?.image;
-    if (!imageBase64) {
-      return res.status(400).json({ error: "Imagem n„o enviada" });
-    }
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+    });
 
     const result = await model.generateContent([
       {
         inlineData: {
-          data: imageBase64,
+          data: image,
           mimeType: "image/jpeg",
         },
       },
-      "Analise esta imagem e descreva o equipamento e possÌveis usos em treino fÌsico.",
+      "Analise esta imagem de equipamento de academia e descreva o exerc√≠cio correto.",
     ]);
 
-    const text = result.response.text();
-
-    return res.json({
+    return res.status(200).json({
       success: true,
-      result: text,
+      result: result.response.text(),
     });
-  } catch (error: any) {
-    console.error("Erro Gemini:", error);
+  } catch (err: any) {
+    console.error("Erro Gemini:", err);
     return res.status(500).json({
-      error: "Erro vis„o",
-      message: error.message || "Erro desconhecido",
+      error: "Erro vis√£o",
+      message: err.message || "Falha interna",
     });
   }
 }
