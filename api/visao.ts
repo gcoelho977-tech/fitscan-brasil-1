@@ -29,7 +29,11 @@ export default async function handler(req, res) {
     res.status(200).json({
       resultado: response.choices[0].message.content,
     });
-  } catch (err) {
-    res.status(500).json({ error: "Erro visão" });
-  }
+  } catch (error: any) {
+  console.error("ERRO REAL VISÃO:", error);
+  return res.status(500).json({
+    error: "Erro visão",
+    message: error?.message || String(error),
+  });
 }
+
