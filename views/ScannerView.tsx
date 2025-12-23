@@ -1,4 +1,4 @@
-﻿import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Button } from '../components/Button';
 import { Camera, Upload, X, Zap } from 'lucide-react';
 import { UserProfile, MachineAnalysis } from '../types';
@@ -32,11 +32,11 @@ export const ScannerView: React.FC<Props> = ({ userProfile, onAnalysisComplete, 
     try {
       // Remove data URL prefix for API
       const base64 = preview.split(',')[1];
-      const result = await analyzeMachineImage(base64, userProfile);
+      const result = 
       onAnalysisComplete(result);
     } catch (error) {
       // Show translated error message from service
-      const errorMessage = error instanceof Error ? error.message : "NÃ£o foi possÃ­vel analisar a imagem. Tente novamente com uma foto mais clara.";
+      const errorMessage = error instanceof Error ? error.message : "Não foi possível analisar a imagem. Tente novamente com uma foto mais clara.";
       alert(errorMessage);
       setIsAnalyzing(false);
     }
@@ -64,8 +64,8 @@ export const ScannerView: React.FC<Props> = ({ userProfile, onAnalysisComplete, 
             <div className="w-full h-64 border-2 border-dashed border-gray-700 rounded-3xl flex items-center justify-center mb-6 bg-dark-gray/20">
                <Camera className="w-16 h-16 text-gray-600" />
             </div>
-            <h3 className="text-2xl font-bold mb-2">Escanear MÃ¡quina</h3>
-            <p className="text-gray-400">Aponte a cÃ¢mera para o equipamento que deseja usar.</p>
+            <h3 className="text-2xl font-bold mb-2">Escanear Máquina</h3>
+            <p className="text-gray-400">Aponte a câmera para o equipamento que deseja usar.</p>
           </div>
         )}
         
@@ -88,7 +88,7 @@ export const ScannerView: React.FC<Props> = ({ userProfile, onAnalysisComplete, 
              fullWidth 
              className="bg-white text-black hover:bg-gray-200"
            >
-             <Camera className="w-5 h-5" /> Tirar foto da mÃ¡quina
+             <Camera className="w-5 h-5" /> Tirar foto da máquina
            </Button>
         ) : (
           <div className="space-y-3">
