@@ -191,9 +191,8 @@ const App: React.FC = () => {
       {view === AppView.WELCOME && (
         <WelcomeView 
           onStart={() => {}} 
-          onOpenPrivacy={() => setView(AppView.PRIVACY)} 
-          onGoogleLogin={handleGoogleLogin}
-          onGuestLogin={() => {}}
+          onOpenPrivacy={() => setView(AppView.PRIVACY)}
+onGuestLogin={() => {}}
         />
       )}
 

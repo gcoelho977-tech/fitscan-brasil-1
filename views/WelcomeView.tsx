@@ -1,90 +1,118 @@
+import React, { useState } from "react";
 
-import React, { useEffect } from 'react';
-import { Camera, Zap, Play, ShieldCheck } from 'lucide-react';
 
-interface Props {
-  onStart: () => void;
-  onOpenPrivacy: () => void;
-  onGoogleLogin: (response: any) => void;
-  onGuestLogin: () => void;
-}
+export const WelcomeView: React.FC<Props> = () => {
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState<"email" | "code">("email");
+  const [msg, setMsg] = useState<string>("");
 
-export const WelcomeView: React.FC<Props> = ({ onOpenPrivacy, onGoogleLogin }) => {
-  useEffect(() => {
-    const google = (window as any).google;
-    if (google) {
-      try {
-        google.accounts.id.initialize({
-          client_id: "891465223788-29h8o04idntk957t2re7g6ivm4h382m9.apps.googleusercontent.com",
-          callback: onGoogleLogin,
-          auto_select: false,
-        });
-        google.accounts.id.renderButton(
-          document.getElementById("googleBtn"),
-          { 
-            theme: "filled_black", 
-            size: "large", 
-            width: 320, 
-            text: "signin_with", 
-            shape: "pill" 
-          }
-        );
-      } catch (e) {
-        console.error("Erro ao inicializar Google Auth", e);
-      }
+  async function requestCode() {
+    setMsg("");
+    const e = email.trim().toLowerCase();
+    if (!e.includes("@")) {
+      setMsg("Digite um e-mail válido.");
+      return;
     }
-  }, [onGoogleLogin]);
+
+    const res = await fetch("/api/auth/request-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: e }),
+    });
+
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      setMsg(j?.error || "Erro ao enviar código.");
+      return;
+    }
+
+    setStep("code");
+    setMsg("Código enviado. Verifique seu e-mail.");
+  }
+
+  async function verifyCode() {
+    setMsg("");
+    const e = email.trim().toLowerCase();
+    const c = otp.trim();
+
+    if (c.length !== 6) {
+      setMsg("O código deve ter 6 dígitos.");
+      return;
+    }
+
+    const res = await fetch("/api/auth/verify-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: e, code: c }),
+    });
+
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      setMsg(j?.error || "Código inválido.");
+      return;
+    }
+
+    setMsg("Logado com sucesso!");
+    // força recarregar pra app pegar sessão / estado
+    setTimeout(() => window.location.reload(), 600);
+  }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-between py-12 px-8 relative overflow-hidden font-sans">
-      {/* Glow de fundo */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-full h-1/2 bg-neon/5 blur-[120px] rounded-full pointer-events-none"></div>
+    <div style={{ padding: 16, maxWidth: 420, margin: "0 auto" }}>
+      <h2 style={{ marginBottom: 8 }}>Bem-vindo ao FitScan</h2>
+      <p style={{ opacity: 0.8, marginTop: 0, marginBottom: 16 }}>
+        Entre com seu e-mail para salvar seus treinos, scans e Premium.
+      </p>
 
-      <div className="flex-1 flex flex-col items-center justify-center w-full z-10">
-        {/* Ícone da Câmera no Box Escuro (Logo) */}
-        <div className="bg-[#121212] p-8 rounded-[2.5rem] mb-10 border border-white/5 shadow-2xl">
-          <Camera className="text-neon w-12 h-12" />
-        </div>
+      <label style={{ display: "block", marginBottom: 8 }}>
+        E-mail
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="seuemail@dominio.com"
+          style={{ width: "100%", padding: 10, marginTop: 6 }}
+          disabled={step === "code"}
+        />
+      </label>
 
-        {/* Títulos FITSCAN BRASIL */}
-        <div className="text-center mb-4">
-          <h1 className="text-white font-[900] text-5xl tracking-tighter leading-none mb-1">FITSCAN</h1>
-          <h1 className="text-neon font-[900] text-5xl tracking-tighter leading-none">BRASIL</h1>
-        </div>
+      {step === "email" && (
+        <button style={{ width: "100%", padding: 10 }} onClick={requestCode}>
+          Receber código
+        </button>
+      )}
 
-        {/* Descrição */}
-        <p className="text-gray-400 text-sm text-center max-w-[240px] leading-relaxed mb-12">
-          Sua inteligência artificial de treino, direto no navegador.
-        </p>
+      {step === "code" && (
+        <>
+          <label style={{ display: "block", marginTop: 12, marginBottom: 8 }}>
+            Código (6 dígitos)
+            <input
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="123456"
+              style={{ width: "100%", padding: 10, marginTop: 6 }}
+              inputMode="numeric"
+            />
+          </label>
 
-        {/* Cards de Recursos */}
-        <div className="grid grid-cols-2 gap-4 w-full max-w-xs mb-16">
-          <div className="bg-[#121212] p-5 rounded-2xl border border-white/5 flex flex-col items-center justify-center gap-3">
-            <Zap className="text-neon w-5 h-5" />
-            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest text-center">Scanear IA</span>
-          </div>
-          <div className="bg-[#121212] p-5 rounded-2xl border border-white/5 flex flex-col items-center justify-center gap-3">
-            <Play className="text-neon w-5 h-5" />
-            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest text-center">Treinos Reais</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Área de Ação: Google Login */}
-      <div className="w-full max-w-xs z-10 flex flex-col items-center gap-8">
-        <div id="googleBtn" className="w-full flex justify-center scale-110"></div>
-        
-        {/* Rodapé */}
-        <div className="flex flex-col items-center gap-3">
-          <p className="text-[10px] text-gray-700 font-black tracking-[0.25em] uppercase">FitScanBrasil.com.br</p>
-          <button 
-            onClick={onOpenPrivacy}
-            className="text-gray-800 text-[10px] flex items-center gap-1 hover:text-gray-500 transition-colors"
-          >
-            <ShieldCheck size={10} /> Termos de Uso
+          <button style={{ width: "100%", padding: 10 }} onClick={verifyCode}>
+            Entrar
           </button>
-        </div>
-      </div>
+
+          <button
+            style={{ width: "100%", padding: 10, marginTop: 8, opacity: 0.85 }}
+            onClick={() => {
+              setStep("email");
+              setOtp("");
+              setMsg("");
+            }}
+          >
+            Voltar
+          </button>
+        </>
+      )}
+
+      {msg && <p style={{ marginTop: 12 }}>{msg}</p>}
     </div>
   );
 };
