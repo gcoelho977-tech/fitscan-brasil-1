@@ -1,0 +1,10 @@
+{
+  "name": "FitScan Brasil - Web",
+  "description": "Plataforma digital de personal trainer com IA. Escaneie máquinas e gere treinos otimizados direto do seu navegador fitscanbrasil.com.br",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "permissions_rationale": {
+    "camera": "O FitScan utiliza a câmera exclusivamente para identificar equipamentos de academia através de inteligência artificial e fornecer instruções de execução segura."
+  }
+}
